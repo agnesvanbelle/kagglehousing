@@ -1,9 +1,32 @@
+Links
+---
+
+https://github.com/vinsci/geohash
+https://www.coursera.org/lecture/deep-learning-in-computer-vision/computing-semantic-image-embeddings-using-convolutional-neural-networks-Oxtfc
+https://www.tensorflow.org/tutorials/estimators/cnn
+https://towardsdatascience.com/deep-learning-4-embedding-layers-f9a02d55ac12
+https://cv-tricks.com/tensorflow-tutorial/training-convolutional-neural-network-for-image-classification/
+
 Improvement Ideas
 ---
 Make it an ordinal regression task or normal regression task, instead of classification: does not make much sense as the evaluation metric is  multi-class logarithmic loss. 
 
 Not use only numerical features:
-use categorical features (from "features", and from after processing "description")
+
+use categorical features :
+	from "features"
+	is_weekday, day_of_week, is_sunday, hour, is_evening etc. from "created"
+	from after processing "description"
+	listing_id
+	manager_id
+	latitude, longitude to geohash
+use word2vec embeddings:
+	from description
+use image embeddings:
+	train deep CNN , use output / layer as feature?
+		Not use pretrained NN, as these are not for houses.
+		
+		A deep convolutional neural network was chosen as the price predictor for this problem. This choice was motivated by the following considerations: First there is an abundant source of labelled data available for the task. We collected more than 100K labelled images for our training set, and more is available. Deep neural networks have been shown to achieve top performance against other models, given enough training data is available to train them and avoid overfitting. Hence sufficient data is crucially important as the network often contain millions of parameters, and regularization techniques such as dropout and data set augmentation so far lack substantive theoretical guarantees. Second is the ongoing promise of neural networks to eliminate the need for hand-engineered features. For the price regression problem, it is not at all clear which features from a photo are most important for price. Hence we forgo the problem of feature selection by collecting enough data for a deep convolutional network to automatically find the right features for our price prediction task.
 
 
 Features
@@ -20,6 +43,7 @@ Geo features:
 -
 display_address 
 street_address 
+
 latitude 
 longitude 
 
