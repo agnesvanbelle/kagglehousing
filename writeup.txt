@@ -1,0 +1,45 @@
+Improvement Ideas
+---
+Make it an ordinal regression task or normal regression task, instead of classification: does not make much sense as the evaluation metric is  multi-class logarithmic loss. 
+
+Not use only numerical features:
+use categorical features (from "features", and from after processing "description")
+
+
+Features
+---
+
+Integer features:
+-
+bathrooms: number of bathrooms 
+bedrooms: number of bathrooms 
+price: in USD 
+
+
+Geo features:
+-
+display_address 
+street_address 
+latitude 
+longitude 
+
+Free-text / categorical features:
+-
+description 
+features: a list of features about this apartment 
+
+
+Date features:
+-
+created 
+
+Categorical features:
+-
+listing_id 
+manager_id 
+features: a list of features about this apartment 
+
+
+Image features:
+-
+photos: a list of photo links. You are welcome to download the pictures yourselves from renthop's site, but they are the same as imgs.zip. 
