@@ -1,6 +1,7 @@
 Links
 ---
 
+https://machinelearningmastery.com/avoid-overfitting-by-early-stopping-with-xgboost-in-python/
 https://github.com/vinsci/geohash
 https://www.coursera.org/lecture/deep-learning-in-computer-vision/computing-semantic-image-embeddings-using-convolutional-neural-networks-Oxtfc
 https://www.tensorflow.org/tutorials/estimators/cnn
