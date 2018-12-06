@@ -8,6 +8,11 @@ import sys
 import os
 from datetime import datetime
 
+from sklearn.feature_extraction import DictVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+from utils.text_utils import clean_text
+
 # Input data files are available in the "../input/" directory.
 # For example, running this (by clicking run or pressing Shift+Enter) will list the files in the input directory
 
@@ -24,6 +29,7 @@ print(check_output(["ls", input_dir]).decode("utf8"))
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import log_loss
+from sklearn.preprocessing import OneHotEncoder
 
 df = pd.read_json(open(os.path.join(input_dir,"train.json"), "r"))
 print(df.shape)
@@ -47,9 +53,19 @@ df["created_year"] = df["created"].dt.year
 df["created_month"] = df["created"].dt.month
 df["created_day"] = df["created"].dt.day # day in month
 
-print(df["created_day"])
-print(df["features"])
+df = df.iloc[:100]
 
+print(df["created_day"])
+
+
+
+#feature_vectorizer = CountVectorizer(tokenizer=lambda doc: doc).fit(df["features"])
+#feature_vectorizer_feature_names = feature_vectorizer.get_feature_names()
+temp_df = df["features"].apply(lambda x : [clean_text(y).replace(' ', '') for y in x])
+print(temp_df)
+features_dummmified = pd.get_dummies(temp_df.apply(pd.Series).stack(), prefix="feature_").sum(level=0)
+print(features_dummmified.columns)
+sys.exit(0)
 
 num_feats = ["bathrooms", "bedrooms", "latitude", "longitude", "price",
              "num_photos", "num_features", "num_description_words",

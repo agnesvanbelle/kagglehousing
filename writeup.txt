@@ -15,7 +15,7 @@ Not use only numerical features:
 
 use categorical features :
 	from "features"
-	is_weekday, day_of_week, is_sunday, hour, is_evening etc. from "created"
+	day_of_week
 	from after processing "description"
 	listing_id
 	manager_id
@@ -37,6 +37,9 @@ Integer features:
 bathrooms: number of bathrooms 
 bedrooms: number of bathrooms 
 price: in USD 
+
+is_weekday, is_sunday, hour, is_evening etc. from "created"
+
 
 
 Geo features:
