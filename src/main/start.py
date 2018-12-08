@@ -37,6 +37,8 @@ print(df.head())
 
 print(df.columns)
 
+import pygeohash as gh
+
 
 
 df["num_photos"] = df["photos"].apply(len)
@@ -53,10 +55,20 @@ df["created_year"] = df["created"].dt.year
 df["created_month"] = df["created"].dt.month
 df["created_day"] = df["created"].dt.day # day in month
 
-df = df.iloc[:100]
+df = df.iloc[:1000]
 
-print(df["created_day"])
+print(df["price"])
+print(df['building_id'])
 
+print(len(set(df["building_id"])), len(df[df["building_id"] == '0']))
+print(df['listing_id'])
+print(df["created"])
+
+
+print(len(df), len(set(df['manager_id'])))
+print(len(df), len(set(df['listing_id'])))
+
+print(pd.get_dummies(df[["manager_id"]]))
 
 
 #feature_vectorizer = CountVectorizer(tokenizer=lambda doc: doc).fit(df["features"])
@@ -64,7 +76,14 @@ print(df["created_day"])
 temp_df = df["features"].apply(lambda x : [clean_text(y).replace(' ', '') for y in x])
 print(temp_df)
 features_dummmified = pd.get_dummies(temp_df.apply(pd.Series).stack(), prefix="feature_").sum(level=0)
-print(features_dummmified.columns)
+
+
+print(df.iloc[0])
+sys.exit(0)
+df['geohash']=df.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=9), axis=1)
+
+print(df['geohash'])
+print(len(df), len(set(df['geohash'])))
 sys.exit(0)
 
 num_feats = ["bathrooms", "bedrooms", "latitude", "longitude", "price",
@@ -73,14 +92,15 @@ num_feats = ["bathrooms", "bedrooms", "latitude", "longitude", "price",
 X = df[num_feats]
 y = df["interest_level"]
 
-X.head()
-
+print(X.shape)
+print(y.shape)
 
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.33)
 
 clf = RandomForestClassifier(n_estimators=10)
 clf.fit(X_train, y_train)
 y_val_pred = clf.predict_proba(X_val)
+print('y_val_predicted:', y_val_pred)
 print("log loss:", log_loss(y_val, y_val_pred))
 
 

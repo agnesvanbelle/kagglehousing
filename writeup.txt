@@ -1,5 +1,6 @@
 Links
 ---
+https://stackoverflow.com/questions/31669864/date-in-flask-url
 
 https://machinelearningmastery.com/avoid-overfitting-by-early-stopping-with-xgboost-in-python/
 https://github.com/vinsci/geohash
@@ -11,6 +12,10 @@ https://cv-tricks.com/tensorflow-tutorial/training-convolutional-neural-network-
 Improvement Ideas
 ---
 Make it an ordinal regression task or normal regression task, instead of classification: does not make much sense as the evaluation metric is  multi-class logarithmic loss. 
+
+ - enable early stopping and use ypred = bst.predict(dtest, ntree_limit=bst.best_ntree_limit), see https://xgboost.readthedocs.io/en/latest/python/python_intro.html
+- word2vec
+- image hash as feature
 
 Not use only numerical features:
 
