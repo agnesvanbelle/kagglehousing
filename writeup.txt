@@ -17,6 +17,22 @@ Make it an ordinal regression task or normal regression task, instead of classif
 - word2vec
 - image hash as feature
 
+-----
+
+Found myself:
+doingparam combi 3 of 48
+	num_boost_rounds: 100
+	eta: 0.1
+	gamma: 1
+	max_depth: 5
+	silent: 1
+	
+	
+	high eta (0.5) not good
+	low gamma <= 1 not good
+	
+----------
+
 Not use only numerical features:
 
 use categorical features :
