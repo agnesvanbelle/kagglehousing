@@ -31,66 +31,66 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import log_loss
 from sklearn.preprocessing import OneHotEncoder
 
-df = pd.read_json(open(os.path.join(input_dir,"train.json"), "r"))
-print(df.shape)
-print(df.head())
+df_test = pd.read_json(open(os.path.join(input_dir,"train.json"), "r"))
+print(df_test.shape)
+print(df_test.head())
 
-print(df.columns)
+print(df_test.columns)
 
 import pygeohash as gh
 
 
 
-df["num_photos"] = df["photos"].apply(len)
-df["num_features"] = df["features"].apply(len)
-df["num_description_words"] = df["description"].apply(lambda x: len(x.split(" ")))
-#print(df["created"])
+df_test["num_photos"] = df_test["photos"].apply(len)
+df_test["num_features"] = df_test["features"].apply(len)
+df_test["num_description_words"] = df_test["description"].apply(lambda x: len(x.split(" ")))
+#print(df_test["created"])
 
-# df["weekday"] = df["created"].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').weekday())
-# print(df["weekday"]) # sunday is 6, weekday is < 5
+# df_test["weekday"] = df_test["created"].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').weekday())
+# print(df_test["weekday"]) # sunday is 6, weekday is < 5
 # sys.exit(0)
 
-df["created"] = pd.to_datetime(df["created"])
-df["created_year"] = df["created"].dt.year
-df["created_month"] = df["created"].dt.month
-df["created_day"] = df["created"].dt.day # day in month
+df_test["created"] = pd.to_datetime(df_test["created"])
+df_test["created_year"] = df_test["created"].dt.year
+df_test["created_month"] = df_test["created"].dt.month
+df_test["created_day"] = df_test["created"].dt.day # day in month
 
-df = df.iloc[:1000]
+df_test = df_test.iloc[:1000]
 
-print(df["price"])
-print(df['building_id'])
+print(df_test["price"])
+print(df_test['building_id'])
 
-print(len(set(df["building_id"])), len(df[df["building_id"] == '0']))
-print(df['listing_id'])
-print(df["created"])
-
-
-print(len(df), len(set(df['manager_id'])))
-print(len(df), len(set(df['listing_id'])))
-
-print(pd.get_dummies(df[["manager_id"]]))
+print(len(set(df_test["building_id"])), len(df_test[df_test["building_id"] == '0']))
+print(df_test['listing_id'])
+print(df_test["created"])
 
 
-#feature_vectorizer = CountVectorizer(tokenizer=lambda doc: doc).fit(df["features"])
+print(len(df_test), len(set(df_test['manager_id'])))
+print(len(df_test), len(set(df_test['listing_id'])))
+
+print(pd.get_dummies(df_test[["manager_id"]]))
+
+
+#feature_vectorizer = CountVectorizer(tokenizer=lambda doc: doc).fit(df_test["features"])
 #feature_vectorizer_feature_names = feature_vectorizer.get_feature_names()
-temp_df = df["features"].apply(lambda x : [clean_text(y).replace(' ', '') for y in x])
+temp_df = df_test["features"].apply(lambda x : [clean_text(y).replace(' ', '') for y in x])
 print(temp_df)
 features_dummmified = pd.get_dummies(temp_df.apply(pd.Series).stack(), prefix="feature_").sum(level=0)
 
 
-print(df.iloc[0])
+print(df_test.iloc[0])
 sys.exit(0)
-df['geohash']=df.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=9), axis=1)
+df_test['geohash']=df_test.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=9), axis=1)
 
-print(df['geohash'])
-print(len(df), len(set(df['geohash'])))
+print(df_test['geohash'])
+print(len(df_test), len(set(df_test['geohash'])))
 sys.exit(0)
 
 num_feats = ["bathrooms", "bedrooms", "latitude", "longitude", "price",
              "num_photos", "num_features", "num_description_words",
              "created_year", "created_month", "created_day"]
-X = df[num_feats]
-y = df["interest_level"]
+X = df_test[num_feats]
+y = df_test["interest_level"]
 
 print(X.shape)
 print(y.shape)
@@ -104,16 +104,16 @@ print('y_val_predicted:', y_val_pred)
 print("log loss:", log_loss(y_val, y_val_pred))
 
 
-df = pd.read_json(open(os.path.join(input_dir, "test.json"), "r"))
-print(df.shape)
-df["num_photos"] = df["photos"].apply(len)
-df["num_features"] = df["features"].apply(len)
-df["num_description_words"] = df["description"].apply(lambda x: len(x.split(" ")))
-df["created"] = pd.to_datetime(df["created"])
-df["created_year"] = df["created"].dt.year
-df["created_month"] = df["created"].dt.month
-df["created_day"] = df["created"].dt.day
-X = df[num_feats]
+df_test = pd.read_json(open(os.path.join(input_dir, "test.json"), "r"))
+print(df_test.shape)
+df_test["num_photos"] = df_test["photos"].apply(len)
+df_test["num_features"] = df_test["features"].apply(len)
+df_test["num_description_words"] = df_test["description"].apply(lambda x: len(x.split(" ")))
+df_test["created"] = pd.to_datetime(df_test["created"])
+df_test["created_year"] = df_test["created"].dt.year
+df_test["created_month"] = df_test["created"].dt.month
+df_test["created_day"] = df_test["created"].dt.day
+X = df_test[num_feats]
 
 y = clf.predict_proba(X)
 
@@ -124,7 +124,7 @@ print(labels2idx)
 
 
 sub = pd.DataFrame()
-sub["listing_id"] = df["listing_id"]
+sub["listing_id"] = df_test["listing_id"]
 for label in ["high", "medium", "low"]:
     sub[label] = y[:, labels2idx[label]]
 sub.to_csv("submission_rf.csv", index=False)

@@ -11,9 +11,17 @@ https://cv-tricks.com/tensorflow-tutorial/training-convolutional-neural-network-
 
 Improvement Ideas
 ---
+
+TODO: check how unbalanced the classes are.
+
 Make it an ordinal regression task or normal regression task, instead of classification: does not make much sense as the evaluation metric is  multi-class logarithmic loss. 
 
- - enable early stopping and use ypred = bst.predict(dtest, ntree_limit=bst.best_ntree_limit), see https://xgboost.readthedocs.io/en/latest/python/python_intro.html
+- sensible default values for empty parameters (column values) e.g. average instead of 0. Mattrs for this algorithm
+- make features of the words in the description. This can be easily done with tf-idf vectorizer from scikit, e.g. TfidfVectorizer(analyzer='word', ngram_range=(1,2), min_df=.01, max_df=.9, 
+                                   lowercase=False, sublinear_tf=True, stop_words = stopwords_dunglish,
+                                        preprocessor = clean_text)
+ for going beyond simple local representations of words, we can use precomputed word2vec vectors.
+- enable early stopping and use ypred = bst.predict(dtest, ntree_limit=bst.best_ntree_limit), see https://xgboost.readthedocs.io/en/latest/python/python_intro.html
 - word2vec
 - image hash as feature
 

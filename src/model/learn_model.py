@@ -1,10 +1,10 @@
 import xgboost as xgb
-from multiprocessing import cpu_count
+#from multiprocessing import cpu_count
 from sklearn.metrics import log_loss
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedShuffleSplit
 from model.extract_features import FeatureExtractor
 import sys
 import math
@@ -19,10 +19,11 @@ default_param['eta'] = 0.1
 default_param['max_depth'] = 20
 default_param['silent'] = 1
 default_param['gamma'] = 1 # for regularization
+default_param['subsample'] = 0.8
 default_param['colsample_bytree'] = 0.5 # subsample ratio of features when constructing each tree.
 default_param['colsample_bylevel'] = 0.5 # subsample ratio of features for each split
 default_param['min_child_weight'] = 2
-default_param['nthread'] = cpu_count() if cpu_count() != None else 4
+#default_param['nthread'] = (cpu_count()-1)*2 if cpu_count() != None else 4
 
 
 def _get_random_prediction(y_train, y_test, labels_sorted):
@@ -33,7 +34,8 @@ def _get_random_prediction(y_train, y_test, labels_sorted):
     df_pred.ix[i,label] = 1
   return df_pred
 
-def grid_search(X, y, num_boost_rounds_list, param_list_dict, n_splits=3, plot=False, verbose_eval = False):
+def grid_search(X, y, num_boost_rounds_list, param_list_dict, n_splits=3, plot=False, verbose_eval = False, filename = None,
+                test_fraction = 0.1):
   keys_params = sorted(list(param_list_dict.keys()))
   keys_to_index = {k:v for k,v in zip(keys_params, range(len(keys_params)))}
   combis = list(itertools.product(num_boost_rounds_list, *[param_list_dict[k] for k in keys_params]))
@@ -55,14 +57,17 @@ def grid_search(X, y, num_boost_rounds_list, param_list_dict, n_splits=3, plot=F
       if not k in keys_params:
         this_params[k] = default_param[k]
     _, avg_ll_model, _ = train_xvalidation(X, y, param = this_params, num_boost_round= param_combi[0], n_splits = n_splits, 
-                                                 plot = plot, verbose_eval = verbose_eval)
+                                                 plot = plot, verbose_eval = verbose_eval, test_fraction = test_fraction)
     if avg_ll_model < best_ll:
       best_ll = avg_ll_model
       best_paramcombi_index = i
+      if filename != None:
+        with open(filename, "w") as fo:
+          fo.write('best_ll:{:2.4f}, best paramcombi:\n{:}'.format(best_ll, get_paramcombi_string(i)))
   
   print('best ll: {:2.2f}, best paramcombi:\n{:s}'.format(best_ll, get_paramcombi_string(best_paramcombi_index)))
   return best_ll, get_paramcombi_string(best_paramcombi_index)
-  
+
 def train(X, y, param, num_boost_round, plot = True, verbose_eval = True):
   
   X_train, featurenames = FeatureExtractor(X).get_features_all()
@@ -89,13 +94,13 @@ def train(X, y, param, num_boost_round, plot = True, verbose_eval = True):
   return final_gb
   
 def train_xvalidation(X, y, param=default_param, num_boost_round=100, 
-                            n_splits=3, plot=True, verbose_eval = True):    
+                            n_splits=3, plot=True, verbose_eval = True, test_fraction = 0.1):    
 
   relative_reductions = []
   ll_baselines = []
   ll_models = []
   
-  skf = StratifiedKFold(n_splits=n_splits, shuffle=True)
+  skf = StratifiedShuffleSplit(n_splits=n_splits,  train_size = 1 - test_fraction, test_size = test_fraction)
   skf.get_n_splits(X, y)
 
   for train_index, test_index in skf.split(X, y):

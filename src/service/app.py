@@ -81,7 +81,7 @@ def get_prediction():
   my_df = my_df.fillna(0)
 
   feature_extractor = FeatureExtractor(my_df)
-  x, x_featurenames = feature_extractor.get_features_pred_instance(my_df, model_feature_names)
+  x, x_featurenames = feature_extractor.get_features_pred_instances(my_df, model_feature_names)
   
   print(d)
   for i, fn in enumerate(x_featurenames):

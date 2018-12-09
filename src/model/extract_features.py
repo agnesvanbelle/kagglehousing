@@ -2,8 +2,11 @@ import pandas as pd
 from utils.text_utils import clean_text
 import pygeohash as gh
 
+
 class FeatureExtractor():
-  
+  '''
+  TODO: this should not need to be a class
+  '''
   def __init__(self, input_file_or_dataframe, max_rows = -1, target_variable=None):
     if type(input_file_or_dataframe) == pd.core.frame.DataFrame:  # @UndefinedVariable
       self.df = input_file_or_dataframe
@@ -15,7 +18,7 @@ class FeatureExtractor():
     
     self.target = None
     if target_variable != None:
-      self.target = self.df[target_variable].copy()
+      self.target = self.df_test[target_variable].copy()
       self.df.drop([target_variable], axis=1, inplace=True)
 
     self.extracted = False
@@ -30,20 +33,20 @@ class FeatureExtractor():
     return df_features, df_featurenames_sorted
   
   @staticmethod
-  def get_features_pred_instance(x, all_required_features):
-    x_features, x_featurenames = FeatureExtractor._extract_features(x)
+  def get_features_pred_instances(X, all_required_features):
+    X_features, X_featurenames = FeatureExtractor._extract_features(X)
     
-    features_only_in_x = set(x_features).difference(all_required_features)
-    features_only_in_required = set(all_required_features).difference(set(x_featurenames))
+    features_only_in_x = set(X_features).difference(all_required_features)
+    features_only_in_required = set(all_required_features).difference(set(X_featurenames))
     
-    x_features.drop(features_only_in_x, axis = 1, inplace = True)
-    x_features[list(features_only_in_required)] = pd.DataFrame([[0]*len(features_only_in_required)], index =  x_features.index)
+    X_features.drop(features_only_in_x, axis = 1, inplace = True)
+    X_features[list(features_only_in_required)] = pd.DataFrame([[0]*len(features_only_in_required)], index =  X_features.index)
     
     all_required_features_sorted = sorted(all_required_features)
-    x_features = x_features.reindex(all_required_features_sorted, axis=1)
+    X_features = X_features.reindex(all_required_features_sorted, axis=1)
    
-    assert(','.join(x_features.columns) == ','.join(all_required_features_sorted))
-    return x_features, all_required_features_sorted
+    assert(','.join(X_features.columns) == ','.join(all_required_features_sorted))
+    return X_features, all_required_features_sorted
   
   def get_features(self, train_index, test_index):
     '''
@@ -70,38 +73,38 @@ class FeatureExtractor():
     return df_train_features, df_test_features, all_featurenames_sorted
   
   @staticmethod
-  def _extract_features(df):
+  def _extract_features(df_test):
     new_df = pd.DataFrame()    
-    new_df = pd.concat([new_df, FeatureExtractor._extract_basic_integer_features(df)], axis=1)
-    new_df = pd.concat([new_df, FeatureExtractor._extract_feature_features(df)], axis=1)
-    new_df = pd.concat([new_df, FeatureExtractor._extract_date_features(df)], axis=1)
-    new_df = pd.concat([new_df, FeatureExtractor._extract_category_features(df)], axis=1)
-    new_df = pd.concat([new_df, FeatureExtractor._extract_geo_features(df)], axis=1)
+    new_df = pd.concat([new_df, FeatureExtractor._extract_basic_integer_features(df_test)], axis=1)
+    new_df = pd.concat([new_df, FeatureExtractor._extract_feature_features(df_test)], axis=1)
+    new_df = pd.concat([new_df, FeatureExtractor._extract_date_features(df_test)], axis=1)
+    new_df = pd.concat([new_df, FeatureExtractor._extract_category_features(df_test)], axis=1)
+    new_df = pd.concat([new_df, FeatureExtractor._extract_geo_features(df_test)], axis=1)
     return new_df, new_df.columns
   
   @staticmethod
-  def _extract_basic_integer_features(df):
+  def _extract_basic_integer_features(df_test):
     new_df = pd.DataFrame()
-    new_df["num_photos"] = df["photos"].apply(len)
-    new_df["num_features"] = df["features"].apply(len)
-    new_df["bathrooms"] = df["bathrooms"]
-    new_df["bedrooms"] = df["bedrooms"]
-    new_df["num_description_words"] = df["description"].apply(lambda x: len(x.split(" ")))
-    new_df["price"] = df["price"]
+    new_df["num_photos"] = df_test["photos"].apply(len)
+    new_df["num_features"] = df_test["features"].apply(len)
+    new_df["bathrooms"] = df_test["bathrooms"]
+    new_df["bedrooms"] = df_test["bedrooms"]
+    new_df["num_description_words"] = df_test["description"].apply(lambda x: len(x.split(" ")))
+    new_df["price"] = df_test["price"]
     return new_df
   
   @staticmethod
-  def _extract_feature_features(df):
+  def _extract_feature_features(df_test):
     new_df = pd.DataFrame()
-    temp_features = df["features"].apply(lambda x : ['none'] if not x else [clean_text(y).replace(' ', '') for y in x])
+    temp_features = df_test["features"].apply(lambda x : ['none'] if not x else [clean_text(y).replace(' ', '') for y in x])
     features_dummmified = pd.get_dummies(temp_features.apply(pd.Series).stack(), prefix="feature").sum(level=0)
     new_df = pd.concat([new_df, features_dummmified], axis=1)
     return new_df
   
   @staticmethod
-  def _extract_date_features(df):
+  def _extract_date_features(df_test):
     new_df = pd.DataFrame()
-    created = pd.to_datetime(df["created"])
+    created = pd.to_datetime(df_test["created"])
     new_df["created_year"] = created.dt.year
     new_df["created_month"] = created.dt.month
     new_df["created_day"] = created.dt.day # day in month
@@ -112,14 +115,14 @@ class FeatureExtractor():
     return new_df
   
   @staticmethod
-  def _extract_category_features(df):
-    return pd.concat([pd.get_dummies(df["manager_id"], prefix="man"), pd.get_dummies(df["building_id"], prefix="build")], axis=1)
+  def _extract_category_features(df_test):
+    return pd.concat([pd.get_dummies(df_test["manager_id"], prefix="man"), pd.get_dummies(df_test["building_id"], prefix="build")], axis=1)
   
   @staticmethod
-  def _extract_geo_features(df):
-    geohash_4 = df.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=4), axis=1)
-    geohash_5 = df.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=5), axis=1)
-    geohash_6 = df.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=6), axis=1)
+  def _extract_geo_features(df_test):
+    geohash_4 = df_test.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=4), axis=1)
+    geohash_5 = df_test.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=5), axis=1)
+    geohash_6 = df_test.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=6), axis=1)
     return  pd.concat([pd.get_dummies(geohash_4, prefix = "gh4"), 
                        pd.get_dummies(geohash_5, prefix = "gh5"), 
                        pd.get_dummies(geohash_6, prefix="gh6")], axis=1)
