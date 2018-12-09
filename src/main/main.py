@@ -81,7 +81,7 @@ def apply_final_model():
 #train_xvalidation()
 #train_final_model()
 
-apply_final_model()
+#apply_final_model()
 
 
 

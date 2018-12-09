@@ -9,6 +9,7 @@ import pandas as pd
 import xgboost as xgb
 import json
 from service.interest_prediction import InterestPrediction
+from datetime import datetime
 
 model = None
 model_feature_names = None
@@ -26,7 +27,7 @@ def url_error(e):
 @app.errorhandler(500)
 def server_error(e):
   return """
-  An internal error occurred: <pre>{}</pre>
+  An internal error occurred:</br><pre>{}</pre>
   See logs for full stacktrace.
   """.format(e), 500
 
@@ -60,8 +61,27 @@ def get_prediction():
   price: in USD 
   street_address 
   '''
-  d = {}
+ 
+  def check_date(input_date):
+    '''
+    The date does not have the be converted here already to a datetime as that
+    happens during feature extraction, but it is good to check
+    here already if the format is correct - inputting dates is error-prone 
+    '''
+    dateformat = '%Y-%m-%d %H:%M:%S'
+    input_date = input_date.strip()
+    if len(input_date) == 0:
+      return datetime.now().strftime(dateformat)
+    try: 
+      if not ' ' in input_date: # no hours, minutes, seconds
+        input_date = input_date + ' 12:00:00'
+      print ('input date:', input_date)
+      datetime.strptime(input_date, '%Y-%m-%d %H:%M:%S')
+      return input_date
+    except ValueError:
+      raise Exception("Cannot parse input date. Please use format '%Y-%m-%d %H:%M:%S' or '%Y-%m-%d'")
   
+  d = {}
   d['bathrooms'] = request.args.get('bathrooms', type = int)
   d['bedrooms'] = request.args.get('bedrooms', type = int)
   d['building_id'] = request.args.get('building_id', type = str, default = '0')
@@ -75,7 +95,7 @@ def get_prediction():
   d['photos'] = request.args.getlist('photo', type = str)
   d['price'] = request.args.get('price', type = int)
   d['street_address'] = request.args.get('street_address', type = str, default = '')
-  d['created'] = request.args.get('created', type = str, default = '')
+  d['created'] = check_date(request.args.get('created', type = str, default = ''))
 
   my_df = pd.DataFrame({k: [v] for k, v in d.items()})
   my_df = my_df.fillna(0)
@@ -83,9 +103,9 @@ def get_prediction():
   feature_extractor = FeatureExtractor(my_df)
   x, x_featurenames = feature_extractor.get_features_pred_instances(my_df, model_feature_names)
   
-  print(d)
-  for i, fn in enumerate(x_featurenames):
-    print("{:s} --> {:}".format(fn, x.iloc[0,i]))
+#   print(d)
+#   for i, fn in enumerate(x_featurenames):
+#     print("{:s} --> {:}".format(fn, x.iloc[0,i]))
     
   index_to_class =  {int(k):v for k,v in json.loads(model.attr('index_to_class')).items()}
  
@@ -106,6 +126,7 @@ def create_app():
 
 if __name__ == '__main__':
   app = create_app()
+  app.config['PROPAGATE_EXCEPTIONS'] = True
   app.run(debug=True, use_reloader=False)
   
 '''
@@ -113,8 +134,7 @@ cd src
 PYTHONPATH=. python service/app.py 
 '''
   
-  # http://127.0.0.1:5000/interest_prediction?bedrooms=1&bathrooms=5&latitude=40.7&longitude=-73.9425&price=200&feature=a&feature=b&feature=c&feature=d&description=%22a%20b%20c%20d%20e%20f%20g%22&photo=b&photo=b&photo=c&photo=d
-  
+# http://127.0.0.1:5000/interest_prediction?bedrooms=1&bathrooms=5&latitude=40.7&longitude=-73.9425&price=200&feature=a&feature=b&feature=c&feature=d&description=%22a%20b%20c%20d%20e%20f%20g%22&photo=b&photo=b&photo=c&photo=d&created=2016-08-09%2018:50:00  
   
   
   
