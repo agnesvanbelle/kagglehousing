@@ -36,6 +36,14 @@ def _get_random_prediction(y_train, y_test, labels_sorted):
 
 def grid_search(X, y, num_boost_rounds_list, param_list_dict, n_splits=3, plot=False, verbose_eval = False, filename = None,
                 test_fraction = 0.1):
+  '''
+  Do a grid search given a list containing the num_boost_round parameters (num_boost_rounds) that should be tested 
+  and a dictionary (param_list_dict) that has a key the model parameter (see default_param above) 
+  and as value a list of values that should be used for that parameter. All num_boost_round & parameter combinations
+  are checked using cross-validation, using he function train_xvalidation below. Returns the best log loss
+  value and a string representation of the best model parameters found. If a filename is given it
+  writes the latter two values each time they are updated to that filename.
+  '''
   keys_params = sorted(list(param_list_dict.keys()))
   keys_to_index = {k:v for k,v in zip(keys_params, range(len(keys_params)))}
   combis = list(itertools.product(num_boost_rounds_list, *[param_list_dict[k] for k in keys_params]))
@@ -69,7 +77,9 @@ def grid_search(X, y, num_boost_rounds_list, param_list_dict, n_splits=3, plot=F
   return best_ll, get_paramcombi_string(best_paramcombi_index)
 
 def train(X, y, param, num_boost_round, plot = True, verbose_eval = True):
-  
+  '''
+  Train a single model. Returns the model (an Xgboost Booster)
+  '''
   X_train, featurenames = FeatureExtractor(X).get_features_all()
   labels_sorted = list(sorted(set(y)))
   class_to_index = {k:v for k,v in zip(labels_sorted, range(len(labels_sorted)))} 
@@ -95,7 +105,11 @@ def train(X, y, param, num_boost_round, plot = True, verbose_eval = True):
   
 def train_xvalidation(X, y, param=default_param, num_boost_round=100, 
                             n_splits=3, plot=True, verbose_eval = True, test_fraction = 0.1):    
-
+  '''
+  Do several cross-validation rounds, using shuffle-splits. Returns the average log loss of the
+  baseline (calculated using random predictions per split), average log loss of the model, and
+  average relative log loss reduction of the model over the baseline. The averages are over the splits. 
+  '''
   relative_reductions = []
   ll_baselines = []
   ll_models = []

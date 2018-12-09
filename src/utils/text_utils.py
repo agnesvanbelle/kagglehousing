@@ -1,7 +1,7 @@
 from html.parser import HTMLParser
 import string
 import re
-import unicodedata
+import unicodedata  # @UnresolvedImport
 
 whitespace_regexp = re.compile(r'\s+')
 

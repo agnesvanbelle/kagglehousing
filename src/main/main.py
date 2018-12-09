@@ -18,7 +18,7 @@ if not os.path.exists(model_dir):
 df = pd.read_json(open(train_filename, "r"))
 df = df.sample(frac=1).reset_index(drop=True) # shuffle
 print(len(df))
-df = df.head(20000)
+#df = df.head(20000)
 
 target_variable = 'interest_level'
 y = df[target_variable]
@@ -47,13 +47,15 @@ def train_xvalidation():
 
 def train_final_model():
   param = {}
-  param['num_class'] = 3
-  param['eta'] = 0.1   
+  param['eta'] = 0.5
   param['max_depth'] = 20
   param['silent'] = 1
-  param['gamma'] = 1 # for regularization
+  param['colsample_by_level'] = 0.5
+  param['colsample_bytree'] = 1
+  param['gamma'] = 2
+  param['subsample'] = 0.8
   
-  model = learn_model.train(X, y, param, 100, plot=True)
+  model = learn_model.train(X, y, param, 10, plot=False)
   pickle.dump(model, open(filename_model, "wb"))
   print('saved model to {:s}'.format(filename_model))
 
@@ -79,9 +81,10 @@ def apply_final_model():
 
 #grid_search()
 #train_xvalidation()
+
 #train_final_model()
 
-#apply_final_model()
+apply_final_model()
 
 
 
