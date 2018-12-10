@@ -43,7 +43,15 @@ def grid_search():
     fo.write('best_ll:{:2.4f}, best paramcombi:\n{:}'.format(best_ll, best_paramcombi_string))
           
 def train_xvalidation():
-  learn_model.train_xvalidation(X, y, n_splits=3, plot=True, num_boost_round=10)
+  param = {}
+  param['eta'] = 0.5
+  param['max_depth'] = 20
+  param['silent'] = 0
+  param['colsample_by_level'] = 0.5
+  param['colsample_bytree'] = 1
+  param['gamma'] = 2
+  param['subsample'] = 0.8
+  learn_model.train_xvalidation(X, y, n_splits=3, plot=True, num_boost_round=10, param = param)
 
 def train_final_model():
   param = {}
@@ -81,9 +89,7 @@ def apply_final_model():
 
 #grid_search()
 #train_xvalidation()
-
 #train_final_model()
-
 apply_final_model()
 
 

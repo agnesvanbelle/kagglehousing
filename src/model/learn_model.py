@@ -103,7 +103,7 @@ def train(X, y, param, num_boost_round, plot = True, verbose_eval = True):
   final_gb.set_attr(index_to_class = json.dumps(index_to_class))
   return final_gb
   
-def train_xvalidation(X, y, param=default_param, num_boost_round=100, 
+def train_xvalidation(X, y, param = default_param, num_boost_round = 100, 
                             n_splits=3, plot=True, verbose_eval = True, test_fraction = 0.1):    
   '''
   Do several cross-validation rounds, using shuffle-splits. Returns the average log loss of the
@@ -113,6 +113,10 @@ def train_xvalidation(X, y, param=default_param, num_boost_round=100,
   relative_reductions = []
   ll_baselines = []
   ll_models = []
+  
+  for k in default_param:
+    if not k in param.keys():
+      param[k] = default_param[k]
   
   skf = StratifiedShuffleSplit(n_splits=n_splits,  train_size = 1 - test_fraction, test_size = test_fraction)
   skf.get_n_splits(X, y)

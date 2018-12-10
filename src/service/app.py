@@ -94,7 +94,7 @@ def get_prediction():
   d['manager_id'] = request.args.get('manager_id', type = str, default = '')
   d['photos'] = request.args.getlist('photo', type = str)
   d['price'] = request.args.get('price', type = int)
-  d['street_address'] = request.args.get('street_address', type = str, default = '')
+  #d['street_address'] = request.args.get('street_address', type = str, default = '')
   d['created'] = check_date(request.args.get('created', type = str, default = ''))
 
   my_df = pd.DataFrame({k: [v] for k, v in d.items()})
@@ -103,10 +103,6 @@ def get_prediction():
   feature_extractor = FeatureExtractor(my_df)
   x, x_featurenames = feature_extractor.get_features_pred_instances(my_df, model_feature_names)
   
-#   print(d)
-#   for i, fn in enumerate(x_featurenames):
-#     print("{:s} --> {:}".format(fn, x.iloc[0,i]))
-    
   index_to_class =  {int(k):v for k,v in json.loads(model.attr('index_to_class')).items()}
  
   pred = model.predict(xgb.DMatrix(x.values, feature_names = x_featurenames))[0]

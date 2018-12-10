@@ -123,7 +123,9 @@ class FeatureExtractor():
     geohash_4 = df_test.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=4), axis=1)
     geohash_5 = df_test.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=5), axis=1)
     geohash_6 = df_test.apply(lambda x: gh.encode(x.latitude, x.longitude, precision=6), axis=1)
-    return  pd.concat([pd.get_dummies(geohash_4, prefix = "gh4"), 
+    return  pd.concat([df_test["latitude"],
+                       df_test["longitude"],      
+                       pd.get_dummies(geohash_4, prefix = "gh4"), 
                        pd.get_dummies(geohash_5, prefix = "gh5"), 
                        pd.get_dummies(geohash_6, prefix="gh6")], axis=1)
     
