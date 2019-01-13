@@ -5,6 +5,10 @@ from model import learn_model
 from model.extract_features import FeatureExtractor
 import json
 import xgboost as xgb
+import eli5
+import xgboost as xgb
+import matplotlib.pyplot as plt
+
 
 data_dir = os.path.join(os.path.dirname(__file__), "../../data/")
 input_dir = os.path.join(data_dir, "rental_listings", "input")
@@ -87,10 +91,23 @@ def apply_final_model():
   sub.to_csv(filename_submission, index=False)
   print ('wrote prediction subission to', filename_submission)
 
+def explore_final_model():
+  
+  model = pickle.load(open(filename_model, "rb"))
+  print(eli5.format_as_text(eli5.explain_weights(model, top=100))) #gain
+  
+  _fig, ax = plt.subplots(1,1,figsize=(20,30))
+  #xgb.plot_importance(model, color='red',  ax=ax, max_num_features=25, importance_type = 'gain') # gain, weight, cover
+  #plt.show()
+
+
+  
+  
 #grid_search()
 #train_xvalidation()
 #train_final_model()
-apply_final_model()
+#apply_final_model()
+explore_final_model()
 
 
 

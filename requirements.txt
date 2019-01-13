@@ -1,11 +1,14 @@
 absl-py==0.6.1
 astor==0.7.1
+attrs==18.2.0
 Click==7.0
 cycler==0.10.0
 DateTime==4.3
 dill==0.2.8.2
+eli5==0.8.1
 Flask==1.0.2
 gast==0.2.0
+graphviz==0.10.1
 grpcio==1.17.0
 h5py==2.8.0
 itsdangerous==1.1.0
@@ -27,9 +30,11 @@ scikit-learn==0.20.1
 scipy==1.1.0
 six==1.11.0
 sklearn==0.0
+tabulate==0.8.2
 tensorboard==1.12.0
 tensorflow==1.12.0
 termcolor==1.1.0
+typing==3.6.6
 unicodedata2==11.0.0
 Werkzeug==0.14.1
 xgboost==0.81
