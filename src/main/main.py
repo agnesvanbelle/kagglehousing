@@ -8,6 +8,7 @@ import xgboost as xgb
 import eli5
 import xgboost as xgb
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 data_dir = os.path.join(os.path.dirname(__file__), "../../data/")
@@ -92,11 +93,29 @@ def apply_final_model():
   print ('wrote prediction subission to', filename_submission)
 
 def explore_final_model():
+  #https://github.com/gameofdimension/xgboost_explainer/blob/master/xgboost_explainer_demo.ipynb
   
   model = pickle.load(open(filename_model, "rb"))
-  print(eli5.format_as_text(eli5.explain_weights(model, top=100))) #gain
+  model_feature_names = model.attr('feature_names').split('|')    
+  index_to_class = json.loads(model.attr('index_to_class'))
+  print(index_to_class)
+  classes = [index_to_class[k] for k in sorted(index_to_class.keys())]
+  print(classes)
   
-  _fig, ax = plt.subplots(1,1,figsize=(20,30))
+  print(eli5.format_as_text(eli5.explain_weights(model, top=10))) #gain
+  
+  df_test = pd.read_json(open(test_filename, "r"))
+  df_test = df_test.head(5)
+  feature_extractor = FeatureExtractor(df_test)
+  X, X_featurenames = feature_extractor.get_features_pred_instances(df_test, model_feature_names)
+  
+  print(X)
+  print(set(X.dtypes))
+#   print(X.iloc[0])
+  print(eli5.format_as_text(eli5.explain_prediction(model, X.head(1), target_names = classes, top = 10, feature_names = X_featurenames)))
+
+
+  #_fig, ax = plt.subplots(1,1,figsize=(20,30))
   #xgb.plot_importance(model, color='red',  ax=ax, max_num_features=25, importance_type = 'gain') # gain, weight, cover
   #plt.show()
 
