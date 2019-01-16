@@ -8,6 +8,7 @@ import xgboost as xgb
 import eli5
 import xgboost as xgb
 import matplotlib.pyplot as plt
+import sys
 import numpy as np
 
 
@@ -23,7 +24,9 @@ if not os.path.exists(model_dir):
 df = pd.read_json(open(train_filename, "r"))
 df = df.sample(frac=1).reset_index(drop=True) # shuffle
 print(len(df))
-#df = df.head(20000)
+df = df.head(20000)
+#df = df.head(100)
+print(df)
 
 target_variable = 'interest_level'
 y = df[target_variable]
@@ -95,6 +98,12 @@ def apply_final_model():
 def explore_final_model():
   #https://github.com/gameofdimension/xgboost_explainer/blob/master/xgboost_explainer_demo.ipynb
   
+  nr_labels = len(y)
+  value_counts = y.value_counts()
+  perc_per_label = {k:round(100 * v/float(nr_labels),2) for k,v in value_counts.items()}
+  print('value counts:', y.value_counts())
+  print('perc per label:', perc_per_label)
+
   model = pickle.load(open(filename_model, "rb"))
   model_feature_names = model.attr('feature_names').split('|')    
   index_to_class = json.loads(model.attr('index_to_class'))
@@ -102,26 +111,25 @@ def explore_final_model():
   classes = [index_to_class[k] for k in sorted(index_to_class.keys())]
   print(classes)
   
-  print(eli5.format_as_text(eli5.explain_weights(model, top=10))) #gain
+  print('eli5 explain weights (gain):\n',eli5.format_as_text(eli5.explain_weights(model, top=10))) #gain
   
   df_test = pd.read_json(open(test_filename, "r"))
   df_test = df_test.head(5)
   feature_extractor = FeatureExtractor(df_test)
-  X, X_featurenames = feature_extractor.get_features_pred_instances(df_test, model_feature_names)
+  X_test, X_test_featurenames = feature_extractor.get_features_pred_instances(df_test, model_feature_names)
+  
   
   print(X)
   print(set(X.dtypes))
 #   print(X.iloc[0])
-  print(eli5.format_as_text(eli5.explain_prediction(model, X.head(1), target_names = classes, top = 10, feature_names = X_featurenames)))
+  print(eli5.format_as_text(eli5.explain_prediction(model, X_test.head(1), target_names = classes, top = 10, feature_names = X_test_featurenames)))
 
-
+  learn_model.test(X, y, model_feature_names, model)
   #_fig, ax = plt.subplots(1,1,figsize=(20,30))
   #xgb.plot_importance(model, color='red',  ax=ax, max_num_features=25, importance_type = 'gain') # gain, weight, cover
   #plt.show()
 
 
-  
-  
 #grid_search()
 #train_xvalidation()
 #train_final_model()

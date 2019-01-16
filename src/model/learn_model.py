@@ -1,6 +1,6 @@
 import xgboost as xgb
 #from multiprocessing import cpu_count
-from sklearn.metrics import log_loss
+from sklearn.metrics import log_loss, confusion_matrix, cohen_kappa_score
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -10,6 +10,7 @@ import sys
 import math
 import itertools
 import json
+import seaborn as sn
 
 default_param = {}
 default_param['objective'] = 'multi:softprob'
@@ -76,6 +77,64 @@ def grid_search(X, y, num_boost_rounds_list, param_list_dict, n_splits=3, plot=F
   print('best ll: {:2.2f}, best paramcombi:\n{:s}'.format(best_ll, get_paramcombi_string(best_paramcombi_index)))
   return best_ll, get_paramcombi_string(best_paramcombi_index)
 
+def test(X, y, model_feature_names, model):
+  X, X_featurenames = FeatureExtractor.get_features_pred_instances(X, model_feature_names)
+
+  labels_sorted = list(sorted(set(y)))
+  class_to_index = {k:v for k,v in zip(labels_sorted, range(len(labels_sorted)))} 
+  index_to_class = {v:k for k,v in zip(labels_sorted, range(len(labels_sorted)))} 
+  y_numeric = [class_to_index[k] for k in y]
+  
+  
+  labels_sorted = list(sorted(set(y)))
+  random_prediction = _get_random_prediction(y, y, labels_sorted)
+  ll_baseline =  log_loss(y, random_prediction.values, labels = labels_sorted)
+    
+  testmat = xgb.DMatrix(X.values, label = y_numeric, feature_names = X_featurenames)
+  y_pred = model.predict(testmat)
+  
+  print('y:',y[:5,])
+  print('y_pred:',y_pred[:5,])
+  
+  y_pred_labeled = np.array([index_to_class[i] for i in np.argmax(y_pred, 1)])
+  
+  print('y_pred_labeled:',y_pred_labeled[:5,])
+  
+  ll_model = log_loss(y, y_pred, labels = labels_sorted)
+  relative_reduction = (ll_baseline - ll_model) / (ll_baseline / 100.0)
+  if ll_baseline <=  math.pow(10, -5):
+    relative_reduction = 0
+  print('\tll baseline: %2.2f, ll model: %2.2f, relative reduction: %2.2f perc' % (ll_baseline, ll_model, relative_reduction))
+  
+  print('labels_sorted:', labels_sorted)
+  cm = confusion_matrix(y, y_pred_labeled, labels = labels_sorted)
+  cm_rel = 100 * (cm.T / cm.sum(axis=1)).T
+  
+  ck = cohen_kappa_score(y, y_pred_labeled, labels = labels_sorted)
+  print("ck:",ck)
+
+#   value_counts = y.value_counts()
+#   cm_rel = cm
+#   for label in labels_sorted:
+#     index = class_to_index[label]
+#     print('index:', index)
+#     cm_rel[:, index] /= 100 * float(value_counts[label])
+  
+  
+  print('cm:\n', cm)
+  
+  print('cm rel:\n', cm_rel)
+  
+  df_cm = pd.DataFrame(cm_rel, columns = labels_sorted, index = labels_sorted)#, index = [i for i in "ABCDEFGHIJK"],columns = [i for i in "ABCDEFGHIJK"])
+  plt.figure(figsize = (10,7))
+  sn.set(font_scale=1.4)#for label size
+  sn.heatmap(df_cm, annot=True, cmap = sn.cm.rocket_r)
+  
+  plt.ylabel('True label')
+  plt.xlabel('Predicted label')
+  plt.tight_layout()
+  plt.show()
+  
 def train(X, y, param, num_boost_round, plot = True, verbose_eval = True):
   '''
   Train a single model. Returns the model (an Xgboost Booster)
