@@ -1,0 +1,29 @@
+49352
+(30000, 14)
+(30000,)
+	ll baseline: 15.96, ll model: 0.59, relative reduction: 96.31 perc
+	ll baseline: 15.68, ll model: 0.60, relative reduction: 96.18 perc
+	ll baseline: 15.50, ll model: 0.59, relative reduction: 96.20 perc
+	ll baseline: 16.23, ll model: 0.59, relative reduction: 96.35 perc
+	ll baseline: 15.63, ll model: 0.60, relative reduction: 96.16 perc
+	ll baseline: 15.59, ll model: 0.57, relative reduction: 96.33 perc
+	ll baseline: 15.62, ll model: 0.58, relative reduction: 96.29 perc
+	ll baseline: 15.69, ll model: 0.61, relative reduction: 96.13 perc
+	ll baseline: 15.75, ll model: 0.60, relative reduction: 96.21 perc
+	ll baseline: 16.13, ll model: 0.57, relative reduction: 96.44 perc
+done 10 splits. avg. ll baseline: 15.78, avg. ll model: 0.59, avg. relative reduction: 96.26
+y_true: ['low' 'low' 'low' 'low' 'low']
+y_pred: ['medium' 'low' 'medium' 'low' 'medium']
+len y_true: 30000
+	ll baseline: 16.13, ll model: 0.57, relative reduction: 96.44 perc
+labels_sorted: ['high', 'low', 'medium']
+cm:
+ [[  558   625  1097]
+ [  142 18990  1788]
+ [  431  3822  2547]]
+cm_rel:
+ [[24.47368421 27.4122807  48.11403509]
+ [ 0.67877629 90.77437859  8.54684512]
+ [ 6.33823529 56.20588235 37.45588235]]
+cohens kappa: 0.35936862137532033
+

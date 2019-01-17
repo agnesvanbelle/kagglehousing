@@ -59,7 +59,7 @@ def train_xvalidation(make_stats = False):
   param['colsample_bytree'] = 1
   param['gamma'] = 2
   param['subsample'] = 0.8
-  learn_model.train_xvalidation(X, y, n_splits=10, plot=False, verbose_eval= False, num_boost_round=10, param = param, make_stats = make_stats)
+  learn_model.train_xvalidation(X, y, n_splits=20, plot=False, verbose_eval= False, num_boost_round=10, param = param, make_stats = make_stats)
 
 def train_final_model():
   param = {}
@@ -124,7 +124,7 @@ def explore_final_model():
 #   print(X.iloc[0])
   print(eli5.format_as_text(eli5.explain_prediction(model, X_test.head(1), target_names = classes, top = 10, feature_names = X_test_featurenames)))
 
-  learn_model.test(X, y, model_feature_names, model)
+  #learn_model.test(X, y, model_feature_names, model)
   #_fig, ax = plt.subplots(1,1,figsize=(20,30))
   #xgb.plot_importance(model, color='red',  ax=ax, max_num_features=25, importance_type = 'gain') # gain, weight, cover
   #plt.show()

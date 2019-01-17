@@ -1,0 +1,38 @@
+49352
+(30000, 14)
+(30000,)
+	ll baseline: 15.91, ll model: 0.59, relative reduction: 96.31 perc
+	ll baseline: 15.70, ll model: 0.59, relative reduction: 96.24 perc
+	ll baseline: 15.60, ll model: 0.59, relative reduction: 96.21 perc
+	ll baseline: 15.82, ll model: 0.59, relative reduction: 96.27 perc
+	ll baseline: 15.77, ll model: 0.59, relative reduction: 96.26 perc
+	ll baseline: 15.81, ll model: 0.60, relative reduction: 96.18 perc
+	ll baseline: 15.65, ll model: 0.58, relative reduction: 96.26 perc
+	ll baseline: 15.77, ll model: 0.60, relative reduction: 96.21 perc
+	ll baseline: 15.51, ll model: 0.60, relative reduction: 96.11 perc
+	ll baseline: 15.58, ll model: 0.59, relative reduction: 96.21 perc
+	ll baseline: 15.83, ll model: 0.58, relative reduction: 96.32 perc
+	ll baseline: 15.29, ll model: 0.59, relative reduction: 96.11 perc
+	ll baseline: 15.70, ll model: 0.59, relative reduction: 96.24 perc
+	ll baseline: 15.98, ll model: 0.59, relative reduction: 96.31 perc
+	ll baseline: 16.08, ll model: 0.59, relative reduction: 96.31 perc
+	ll baseline: 15.84, ll model: 0.59, relative reduction: 96.28 perc
+	ll baseline: 16.06, ll model: 0.58, relative reduction: 96.37 perc
+	ll baseline: 15.30, ll model: 0.59, relative reduction: 96.14 perc
+	ll baseline: 15.74, ll model: 0.59, relative reduction: 96.27 perc
+	ll baseline: 16.06, ll model: 0.58, relative reduction: 96.37 perc
+done 20 splits. avg. ll baseline: 15.75, avg. ll model: 0.59, avg. relative reduction: 96.25
+y_true: ['low' 'low' 'low' 'medium' 'low']
+y_pred: ['low' 'low' 'low' 'medium' 'low']
+len y_true: 60000
+	ll baseline: 16.06, ll model: 0.58, relative reduction: 96.37 perc
+labels_sorted: ['high', 'low', 'medium']
+cm:
+ [[ 1250  1341  2049]
+ [  288 38147  3425]
+ [  878  7856  4766]]
+cm_rel:
+ [[26.93965517 28.90086207 44.15948276]
+ [ 0.68800764 91.129957    8.18203536]
+ [ 6.5037037  58.19259259 35.3037037 ]]
+cohens kappa: 0.3530328571232484
