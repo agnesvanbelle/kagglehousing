@@ -24,9 +24,9 @@ if not os.path.exists(model_dir):
 df = pd.read_json(open(train_filename, "r"))
 df = df.sample(frac=1).reset_index(drop=True) # shuffle
 print(len(df))
-df = df.head(20000)
+df = df.head(30000)
 #df = df.head(100)
-print(df)
+
 
 target_variable = 'interest_level'
 y = df[target_variable]
@@ -50,16 +50,16 @@ def grid_search():
   with open(filename_grid_search_result, "w") as fo:
     fo.write('best_ll:{:2.4f}, best paramcombi:\n{:}'.format(best_ll, best_paramcombi_string))
           
-def train_xvalidation():
+def train_xvalidation(make_stats = False):
   param = {}
   param['eta'] = 0.5
   param['max_depth'] = 20
-  param['silent'] = 0
+  param['silent'] = 1
   param['colsample_by_level'] = 0.5
   param['colsample_bytree'] = 1
   param['gamma'] = 2
   param['subsample'] = 0.8
-  learn_model.train_xvalidation(X, y, n_splits=3, plot=True, num_boost_round=10, param = param)
+  learn_model.train_xvalidation(X, y, n_splits=10, plot=False, verbose_eval= False, num_boost_round=10, param = param, make_stats = make_stats)
 
 def train_final_model():
   param = {}
@@ -129,12 +129,11 @@ def explore_final_model():
   #xgb.plot_importance(model, color='red',  ax=ax, max_num_features=25, importance_type = 'gain') # gain, weight, cover
   #plt.show()
 
-
 #grid_search()
-#train_xvalidation()
+train_xvalidation(make_stats = True)
 #train_final_model()
 #apply_final_model()
-explore_final_model()
+#explore_final_model()
 
 
 

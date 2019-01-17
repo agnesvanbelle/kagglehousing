@@ -65,7 +65,7 @@ def grid_search(X, y, num_boost_rounds_list, param_list_dict, n_splits=3, plot=F
     for k in default_param:
       if not k in keys_params:
         this_params[k] = default_param[k]
-    _, avg_ll_model, _ = train_xvalidation(X, y, param = this_params, num_boost_round= param_combi[0], n_splits = n_splits, 
+    _, avg_ll_model, _, _, _, _, _ = train_xvalidation(X, y, param = this_params, num_boost_round= param_combi[0], n_splits = n_splits, 
                                                  plot = plot, verbose_eval = verbose_eval, test_fraction = test_fraction)
     if avg_ll_model < best_ll:
       best_ll = avg_ll_model
@@ -77,64 +77,6 @@ def grid_search(X, y, num_boost_rounds_list, param_list_dict, n_splits=3, plot=F
   print('best ll: {:2.2f}, best paramcombi:\n{:s}'.format(best_ll, get_paramcombi_string(best_paramcombi_index)))
   return best_ll, get_paramcombi_string(best_paramcombi_index)
 
-def test(X, y, model_feature_names, model):
-  X, X_featurenames = FeatureExtractor.get_features_pred_instances(X, model_feature_names)
-
-  labels_sorted = list(sorted(set(y)))
-  class_to_index = {k:v for k,v in zip(labels_sorted, range(len(labels_sorted)))} 
-  index_to_class = {v:k for k,v in zip(labels_sorted, range(len(labels_sorted)))} 
-  y_numeric = [class_to_index[k] for k in y]
-  
-  
-  labels_sorted = list(sorted(set(y)))
-  random_prediction = _get_random_prediction(y, y, labels_sorted)
-  ll_baseline =  log_loss(y, random_prediction.values, labels = labels_sorted)
-    
-  testmat = xgb.DMatrix(X.values, label = y_numeric, feature_names = X_featurenames)
-  y_pred = model.predict(testmat)
-  
-  print('y:',y[:5,])
-  print('y_pred:',y_pred[:5,])
-  
-  y_pred_labeled = np.array([index_to_class[i] for i in np.argmax(y_pred, 1)])
-  
-  print('y_pred_labeled:',y_pred_labeled[:5,])
-  
-  ll_model = log_loss(y, y_pred, labels = labels_sorted)
-  relative_reduction = (ll_baseline - ll_model) / (ll_baseline / 100.0)
-  if ll_baseline <=  math.pow(10, -5):
-    relative_reduction = 0
-  print('\tll baseline: %2.2f, ll model: %2.2f, relative reduction: %2.2f perc' % (ll_baseline, ll_model, relative_reduction))
-  
-  print('labels_sorted:', labels_sorted)
-  cm = confusion_matrix(y, y_pred_labeled, labels = labels_sorted)
-  cm_rel = 100 * (cm.T / cm.sum(axis=1)).T
-  
-  ck = cohen_kappa_score(y, y_pred_labeled, labels = labels_sorted)
-  print("ck:",ck)
-
-#   value_counts = y.value_counts()
-#   cm_rel = cm
-#   for label in labels_sorted:
-#     index = class_to_index[label]
-#     print('index:', index)
-#     cm_rel[:, index] /= 100 * float(value_counts[label])
-  
-  
-  print('cm:\n', cm)
-  
-  print('cm rel:\n', cm_rel)
-  
-  df_cm = pd.DataFrame(cm_rel, columns = labels_sorted, index = labels_sorted)#, index = [i for i in "ABCDEFGHIJK"],columns = [i for i in "ABCDEFGHIJK"])
-  plt.figure(figsize = (10,7))
-  sn.set(font_scale=1.4)#for label size
-  sn.heatmap(df_cm, annot=True, cmap = sn.cm.rocket_r)
-  
-  plt.ylabel('True label')
-  plt.xlabel('Predicted label')
-  plt.tight_layout()
-  plt.show()
-  
 def train(X, y, param, num_boost_round, plot = True, verbose_eval = True):
   '''
   Train a single model. Returns the model (an Xgboost Booster)
@@ -163,7 +105,7 @@ def train(X, y, param, num_boost_round, plot = True, verbose_eval = True):
   return final_gb
   
 def train_xvalidation(X, y, param = default_param, num_boost_round = 100, 
-                            n_splits=3, plot=True, verbose_eval = True, test_fraction = 0.1):    
+                            n_splits=3, plot=True, verbose_eval = True, test_fraction = 0.1, make_stats = False):    
   '''
   Do several cross-validation rounds, using shuffle-splits. Returns the average log loss of the
   baseline (calculated using random predictions per split), average log loss of the model, and
@@ -172,6 +114,8 @@ def train_xvalidation(X, y, param = default_param, num_boost_round = 100,
   relative_reductions = []
   ll_baselines = []
   ll_models = []
+  y_true_all = np.array([], dtype='str')
+  y_pred_all = np.array([], dtype='str')
   
   for k in default_param:
     if not k in param.keys():
@@ -184,6 +128,8 @@ def train_xvalidation(X, y, param = default_param, num_boost_round = 100,
     X_train, X_test, featurenames = FeatureExtractor(X).get_features(train_index, test_index)
     y_train, y_test = y.iloc[train_index], y.iloc[test_index]
     
+    y_true_all = np.concatenate((y_true_all, y_test))
+    
     labels_sorted = list(sorted(set(y)))
 
     random_prediction = _get_random_prediction(y_train, y_test, labels_sorted)
@@ -191,6 +137,8 @@ def train_xvalidation(X, y, param = default_param, num_boost_round = 100,
     ll_baselines.append(ll_baseline)
     
     class_to_index = {k:v for k,v in zip(labels_sorted, range(len(labels_sorted)))} 
+    index_to_class = {v:k for k,v in zip(labels_sorted, range(len(labels_sorted)))} 
+    
     y_train_numeric = [class_to_index[k] for k in y_train]
     y_test_numeric = [class_to_index[k] for k in y_test]
     
@@ -207,6 +155,9 @@ def train_xvalidation(X, y, param = default_param, num_boost_round = 100,
     testmat = xgb.DMatrix(X_test.values, label = y_test_numeric, feature_names = featurenames)
     y_pred = final_gb.predict(testmat)
     
+    y_pred_labeled = np.array([index_to_class[i] for i in np.argmax(y_pred, 1)])
+    y_pred_all = np.concatenate((y_pred_all, y_pred_labeled))
+    
     ll_model = log_loss(y_test, y_pred, labels = labels_sorted)
     ll_models.append(ll_model)
     relative_reduction = (ll_baseline - ll_model) / (ll_baseline / 100.0)
@@ -220,5 +171,43 @@ def train_xvalidation(X, y, param = default_param, num_boost_round = 100,
   print('done {:d} splits. avg. ll baseline: {:2.2f}, avg. ll model: {:2.2f}, avg. relative reduction: {:2.2f}'
         .format(n_splits, avg_ll_baseline, avg_ll_model, avg_relative_reduction))
   
-  return avg_ll_baseline, avg_ll_model, avg_relative_reduction
+  if make_stats:
+    _make_stats(ll_baseline, ll_model, relative_reduction, y_true_all, y_pred_all, index_to_class, labels_sorted, plot = True)
+  return avg_ll_baseline, avg_ll_model, avg_relative_reduction, y_true_all, y_pred_all, index_to_class, labels_sorted
 
+def _make_stats(ll_baseline, ll_model, relative_reduction, y_true, y_pred, index_to_class, labels_sorted, plot = True):
+  
+  
+  print('y_true:',y_true[:5,])
+  print('y_pred:',y_pred[:5,])
+  
+  print('len y_true:',len(y_true))
+  
+  print('\tll baseline: %2.2f, ll model: %2.2f, relative reduction: %2.2f perc' % (ll_baseline, ll_model, relative_reduction))
+  
+  print('labels_sorted:', labels_sorted)
+  cm = confusion_matrix(y_true, y_pred, labels = labels_sorted)
+  cm_rel = np.nan_to_num(100 * (cm.T / cm.sum(axis=1)).T)
+  
+  print('cm:\n', cm)
+  print('cm_rel:\n', cm_rel)
+  
+  ck = cohen_kappa_score(y_true, y_pred, labels = labels_sorted)
+  print("cohens kappa:",ck)
+  
+  if plot:
+    _make_cf_matrix_plot(cm, labels_sorted)
+    plt.gcf().clear()
+    plt.close()
+    _make_cf_matrix_plot(cm_rel, labels_sorted)
+
+def _make_cf_matrix_plot(cm, labels):
+  df_cm = pd.DataFrame(cm, columns = labels, index = labels)#, index = [i for i in "ABCDEFGHIJK"],columns = [i for i in "ABCDEFGHIJK"])
+  plt.figure(figsize = (10,7))
+  sn.set(font_scale=1.4)#for label size
+  sn.heatmap(df_cm, annot=True, cmap = sn.cm.rocket_r)
+  
+  plt.ylabel('True label')
+  plt.xlabel('Predicted label')
+  plt.tight_layout()
+  plt.show()

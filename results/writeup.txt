@@ -27,6 +27,9 @@ Make it an ordinal regression task or normal regression task, instead of classif
 
 -----
 
+memory error when using full dataset...
+----
+
 Found myself:
 doingparam combi 3 of 48
 	num_boost_rounds: 100
