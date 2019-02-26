@@ -1,6 +1,6 @@
 ## Kaggle housing
 
-### Understanding the appraoch
+###  Main appraoch
 The file `src/main/main.py` contains some methods used to do grid search, cross-validation, training a final model and getting predictions on a test set. They should be the starting point to understand how the model was learnt.
 
 ### How to run: instructions
